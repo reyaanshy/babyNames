@@ -1,0 +1,62 @@
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+
+public class GanjooBaby {
+    // Main method to interact with the user and call the displayMostPopularName method
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String state, year, sex;
+        // Continuously prompt user for input until 'Q' is entered to quit
+        while (true) {
+            try {
+                System.out.print("Enter State Abbreviation or 'Q' to quit: ");
+                state = scanner.nextLine();
+                if (state.equalsIgnoreCase("Q")) {
+                    break;
+                }
+                System.out.print("Enter year to check: ");
+                year = scanner.nextLine();
+                System.out.print("Enter gender (F for female and M for Male): ");
+                sex = scanner.nextLine();
+                displayMostPopularName(state, year, sex);
+            } catch (FileNotFoundException e) {
+                System.out.println("File not found.");
+            } catch (Exception e) {
+                System.out.println("Error! Try again.");
+            }
+        }
+        scanner.close();
+    }
+    // Method to read the file and find the most popular name based on input criteria
+    private static void displayMostPopularName(String state, String year, String sex) throws FileNotFoundException {
+        File file = new File("namesByState/STATE." + state + ".TXT");
+        Scanner fileScanner = new Scanner(file);
+        String mostPopularName = "";
+        int mostPopularNameCount = 0;
+        int totalNamesCount = 0;
+        // Iterate through the file to find the most popular name for the given criteria
+        while (fileScanner.hasNextLine()) {
+            String line = fileScanner.nextLine();
+            String[] parts = line.split(",");
+            if (parts[1].equalsIgnoreCase(sex) && parts[2].equals(year)) {
+                int count = Integer.parseInt(parts[4]);
+                totalNamesCount += count;
+                if (mostPopularNameCount == 0) {
+                    mostPopularName = parts[3];
+                    mostPopularNameCount = count;
+                }
+            }
+        }
+
+        fileScanner.close();
+        // Output the most popular name and related statistics
+        if (mostPopularName.isEmpty()) {
+            System.out.println("No data for this mix of inputs.");
+        } else {
+            double percentage = (double) mostPopularNameCount / totalNamesCount * 100;
+            System.out.printf("The most popular %s name in %s was %s\n", sex.equalsIgnoreCase("M") ? "Male" : "Female", year, mostPopularName);
+            System.out.printf("%d babies were born named %s which made up %.2f percent of the births\n", mostPopularNameCount, mostPopularName, percentage);
+        }
+    }
+}
